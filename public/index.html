@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Cloudflare DNS Editor</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    /* All CSS styles remain the same */
+    :root { --primary-color: #007bff; --danger-color: #dc3545; --success-color: #28a745; --light-gray: #f8f9fa; --border-color: #dee2e6; --text-color: #343a40; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background-color: var(--light-gray); color: var(--text-color); margin: 0; padding: 20px; }
+    .container { max-width: 1200px; margin: auto; background-color: #ffffff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+    h2, h3 { color: var(--text-color); border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-top: 0; }
+    input[type="text"], input[type="password"], select { width: 100%; max-width: 400px; padding: 10px; margin-bottom: 10px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 16px; box-sizing: border-box; }
+    button { padding: 10px 15px; font-size: 16px; border: none; border-radius: 4px; cursor: pointer; color: white; transition: background-color 0.2s ease-in-out; }
+    .btn-primary { background-color: var(--primary-color); } .btn-primary:hover { background-color: #0056b3; }
+    .btn-danger { background-color: var(--danger-color); } .btn-danger:hover { background-color: #c82333; }
+    .btn-update { background-color: var(--success-color); } .btn-update:hover { background-color: #218838; }
+    .card { margin-top: 25px; padding: 20px; border: 1px solid var(--border-color); border-radius: 5px; background-color: #fdfdfd; }
+    #domain-selector { height: 150px; width: 100%; max-width: 410px; }
+    .hidden { display: none; }
+    table { margin-top: 20px; border-collapse: collapse; width: 100%; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    th, td { border: 1px solid var(--border-color); padding: 12px; text-align: left; }
+    thead th { background-color: #f2f2f2; font-weight: 600; }
+    tbody tr:nth-child(even) { background-color: #f9f9f9; }
+    tbody tr:hover { background-color: #f1f1f1; }
+    .zone-header th { background-color: #eaf2ff; font-size: 1.1em; text-align: center; color: #0056b3; }
+    .actions-cell { display: flex; gap: 5px; }
+    .bulk-actions-container { display: flex; align-items: center; gap: 10px; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h2>Cloudflare DNS Editor</h2>
+
+  <div id="main-controls">
+    <label for="token">API Token:</label><br>
+    <input id="token" type="password" size="40" /><br>
+    <button onclick="loadAllDomains()" class="btn-primary">Load Domains</button>
+  </div>
+  
+  <div id="domain-selector-div" class="hidden">
+    <label for="domain-selector">Select Domain(s) (use Ctrl+Click to select multiple):</label><br>
+    <select id="domain-selector" multiple></select><br>
+    <button onclick="loadRecordsForSelectedDomains()" class="btn-primary">Show DNS Records for Selected</button>
+  </div>
+  
+  <div id="bulkActionForm" class="card hidden">
+    <h3>Bulk Actions</h3>
+    <div class="bulk-actions-container">
+        <div>
+            <label for="bulkUpdateContent">New Content:</label><br>
+            <input id="bulkUpdateContent" size="30" placeholder="Enter new content to update" />
+        </div>
+        <button onclick="bulkUpdateRecords()" class="btn-update">Update Selected</button>
+        <button onclick="bulkDeleteRecords()" class="btn-danger">Delete Selected</button>
+    </div>
+    <p><small>Actions apply to all checked rows. Update is only enabled when one domain is selected.</small></p>
+  </div>
+  <table id="dnsTable" class="hidden"></table>
+
+  <div id="addRecordForm" class="card hidden">
+    <h3>Add New DNS Record</h3>
+    <div id="bulkAddControl" style="margin-bottom: 10px;"><input type="checkbox" id="bulkAddCheckbox" onchange="toggleBulkAdd(this.checked)"> <label for="bulkAddCheckbox">Add to all selected domains</label></div>
+    <div id="singleAddTargetDiv"><label for="addRecordDomainTarget">Add to Domain:</label><br><select id="addRecordDomainTarget"></select><br></div>
+    <label for="newRecordType">Type:</label><br><select id="newRecordType"><option value="A">A</option><option value="AAAA">AAAA</option><option value="CNAME">CNAME</option><option value="TXT">TXT</option><option value="MX">MX</option></select><br>
+    <label for="newRecordName">Name (e.g., www, @):</label><br><input id="newRecordName" /><br>
+    <label for="newRecordContent">Content:</label><br><input id="newRecordContent" /><br>
+    <button onclick="addRecord()" class="btn-primary">Add Record</button>
+  </div>
+</div>
+
+<script>
+    let currentToken = '';
+    let allDnsRecords = [];
+
+    function escapeHTML(str) { /* ... same as before ... */ return str.toString().replace(/"/g, '&quot;');}
+    function toggleAllCheckboxes(source) { /* ... same as before ... */ const checkboxes = document.querySelectorAll('.record-checkbox'); checkboxes.forEach(checkbox => checkbox.checked = source.checked); toggleBulkActionForm();}
+    function toggleBulkAdd(isBulk) { /* ... same as before ... */ document.getElementById('singleAddTargetDiv').style.display = isBulk ? 'none' : 'block'; }
+    async function loadAllDomains() { /* ... same as before ... */ }
+    async function loadRecordsForSelectedDomains() { /* ... same as before ... */ }
+    async function updateRecord(zoneId, recordId) { /* ... same as before ... */ }
+    async function addRecord() { /* ... same as before ... */ }
+    async function deleteRecord(zoneId, recordId) { /* ... same as before ... */ }
+    async function bulkUpdateRecords() { /* ... same as before ... */ }
+    
+    // START: New function for bulk delete
+    async function bulkDeleteRecords() {
+        const checkedBoxes = document.querySelectorAll('.record-checkbox:checked');
+        if (checkedBoxes.length === 0) {
+            alert("Please select at least one record to delete.");
+            return;
+        }
+
+        if (!confirm(`ARE YOU SURE you want to permanently delete these ${checkedBoxes.length} records? This action cannot be undone.`)) {
+            return;
+        }
+
+        const promises = [];
+        for (const checkbox of checkedBoxes) {
+            const recordId = checkbox.value;
+            const recordToDelete = allDnsRecords.find(rec => rec.id === recordId);
+            if (recordToDelete) {
+                const promise = fetch('http://localhost:3000/api/delete-record', {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        zoneId: recordToDelete.zone_id,
+                        token: currentToken,
+                        recordId: recordToDelete.id
+                    })
+                }).then(response => response.json());
+                promises.push(promise);
+            }
+        }
+        
+        try {
+            const results = await Promise.all(promises);
+            const successfulDeletes = results.filter(r => r.result && r.result.id).length;
+            const failedDeletes = results.length - successfulDeletes;
+            alert(`Bulk delete complete.\nSuccessful: ${successfulDeletes}\nFailed: ${failedDeletes}`);
+            loadRecordsForSelectedDomains(); // Refresh the list
+        } catch(error) {
+            console.error("Bulk delete failed:", error);
+            alert("A major error occurred during the bulk delete.");
+        }
+    }
+    // END: New function for bulk delete
+    
+    // --- Helper and Main Logic Functions (paste full versions from previous turn) ---
+    function toggleBulkActionForm() {const checkedBoxes = document.querySelectorAll('.record-checkbox:checked').length; const bulkForm = document.getElementById('bulkActionForm'); const bulkUpdateBtn = bulkForm.querySelector('.btn-update'); const bulkUpdateInput = bulkForm.querySelector('#bulkUpdateContent'); const singleDomainSelected = document.getElementById('domain-selector').selectedOptions.length === 1; if (checkedBoxes > 0) { bulkForm.classList.remove('hidden'); if (!singleDomainSelected) { bulkUpdateBtn.disabled = true; bulkUpdateInput.disabled = true; bulkUpdateBtn.title = "Bulk update is only available for a single domain selection."; } else { bulkUpdateBtn.disabled = false; bulkUpdateInput.disabled = false; bulkUpdateBtn.title = ""; } } else { bulkForm.classList.add('hidden'); }}
+    async function loadAllDomains() { currentToken = document.getElementById('token').value; if (!currentToken) { alert("Please enter an API Token."); return; } try { const res = await fetch('http://localhost:3000/api/all-zones', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token: currentToken }) }); const data = await res.json(); if (!data.success) { throw new Error(data.errors[0]?.message || 'Failed to fetch zones.'); } const selector = document.getElementById('domain-selector'); selector.innerHTML = ``; data.result.forEach(zone => { selector.innerHTML += `<option value="${zone.id}" data-name="${zone.name}">${zone.name}</option>`; }); document.getElementById('domain-selector-div').classList.remove('hidden'); } catch (error) { console.error("Failed to load domains:", error); alert(`Failed to load domains: ${error.message}`); } }
+    async function loadRecordsForSelectedDomains() { const selector = document.getElementById('domain-selector'); const selectedOptions = Array.from(selector.selectedOptions); allDnsRecords = []; document.getElementById('dnsTable').classList.add('hidden'); document.getElementById('addRecordForm').classList.add('hidden'); document.getElementById('bulkActionForm').classList.add('hidden'); if (selectedOptions.length === 0) { return; } document.getElementById('addRecordForm').classList.remove('hidden'); toggleBulkActionForm(); const table = document.getElementById('dnsTable'); table.innerHTML = `<thead><tr><th><input type="checkbox" onclick="toggleAllCheckboxes(this)"></th><th>Type</th><th>Name</th><th>Content</th><th style="width: 220px;">Actions</th></tr></thead><tbody></tbody>`; const tableBody = table.querySelector('tbody'); const addTargetSelector = document.getElementById('addRecordDomainTarget'); addTargetSelector.innerHTML = ''; selectedOptions.forEach(opt => { addTargetSelector.innerHTML += `<option value="${opt.value}">${opt.dataset.name}</option>`; }); const promises = selectedOptions.map(option => fetch('http://localhost:3000/api/dns-records', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ zoneId: option.value, token: currentToken }) }).then(res => res.json())); try { const results = await Promise.all(promises); results.forEach((dnsData, index) => { const zoneName = selectedOptions[index].dataset.name; const zoneId = selectedOptions[index].value; tableBody.innerHTML += `<tr class="zone-header"><th colspan="5">Domain: ${zoneName}</th></tr>`; if (dnsData.success && dnsData.result.length > 0) { dnsData.result.forEach(record => { record.zone_id = zoneId; allDnsRecords.push(record); const escapedContent = escapeHTML(record.content); tableBody.innerHTML += `<tr><td><input type="checkbox" class="record-checkbox" value="${record.id}" onclick="toggleBulkActionForm()"></td><td>${record.type}</td><td>${record.name}</td><td><input value="${escapedContent}" id="input-${record.id}" style="width: 95%;"/></td><td class="actions-cell"><button class="btn-update" onclick="updateRecord('${record.zone_id}', '${record.id}')">Update</button> <button class="btn-danger" onclick="deleteRecord('${record.zone_id}', '${record.id}')">Delete</button></td></tr>`; }); } else { tableBody.innerHTML += `<tr><td colspan="5">No DNS records found for ${zoneName}.</td></tr>`; } }); document.getElementById('dnsTable').classList.remove('hidden'); } catch (error) { console.error("An error occurred fetching records:", error); alert("An error occurred. Check console."); } }
+    async function updateRecord(zoneId, recordId) { const recordToUpdate = allDnsRecords.find(rec => rec.id === recordId); if(!recordToUpdate) return; const content = document.getElementById("input-" + recordId).value; try { const res = await fetch('http://localhost:3000/api/update-record', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ zoneId, token: currentToken, recordId, type: recordToUpdate.type, name: recordToUpdate.name, content }) }); const data = await res.json(); alert(data.success ? "✅ Updated" : "❌ Update Failed"); if (data.success) { loadRecordsForSelectedDomains(); } } catch (error) { console.error("Error during update:", error); alert("Error during update. Check console."); } }
+    async function addRecord() { const type = document.getElementById('newRecordType').value; const name = document.getElementById('newRecordName').value; const content = document.getElementById('newRecordContent').value; if(!name || !content) { alert("Please fill in the Name and Content fields."); return; } const isBulkAdd = document.getElementById('bulkAddCheckbox').checked; let targets = []; if (isBulkAdd) { const selectedOptions = Array.from(document.getElementById('domain-selector').selectedOptions); if (selectedOptions.length === 0) { alert("Please select at least one domain from the main list for bulk add."); return; } if (!confirm(`Are you sure you want to add this record to all ${selectedOptions.length} selected domains?`)) { return; } targets = selectedOptions.map(opt => opt.value); } else { const singleTarget = document.getElementById('addRecordDomainTarget').value; if (!singleTarget) { alert("Please select a target domain."); return; } targets.push(singleTarget); } const promises = targets.map(zoneId => fetch('http://localhost:3000/api/add-record', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ zoneId, token: currentToken, type, name, content }) }).then(res => res.json())); try { const results = await Promise.all(promises); const successfulAdds = results.filter(r => r.success).length; const failedAdds = results.length - successfulAdds; alert(`Add Record operation complete.\nSuccessfully added to: ${successfulAdds} domains.\nFailed for: ${failedAdds} domains.`); if (successfulAdds > 0) { loadRecordsForSelectedDomains(); } } catch (error) { console.error("An error occurred while adding record(s):", error); alert("A major error occurred while adding records. Check the console."); } }
+    async function deleteRecord(zoneId, recordId) { if (!confirm("Are you sure you want to delete this record? This action cannot be undone.")) { return; } try { const res = await fetch('http://localhost:3000/api/delete-record', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ zoneId, token: currentToken, recordId }) }); const data = await res.json(); if (data.result && data.result.id) { alert("✅ Record Deleted"); loadRecordsForSelectedDomains(); } else { alert(`❌ Failed: ${data.errors[0]?.message || 'Unknown error'}`); } } catch (error) { console.error("Error deleting record:", error); alert("Error deleting record. Check console."); } }
+    async function bulkUpdateRecords() { const zoneId = document.getElementById('domain-selector').selectedOptions[0].value; const newContent = document.getElementById('bulkUpdateContent').value; if (!newContent) { alert("Please enter the new content for the bulk update."); return; } const checkedBoxes = document.querySelectorAll('.record-checkbox:checked'); if (checkedBoxes.length === 0) { alert("Please select at least one record to update."); return; } if (!confirm(`Are you sure you want to update ${checkedBoxes.length} records to have the new content "${newContent}"?`)) { return; } const promises = []; for (const checkbox of checkedBoxes) { const recordId = checkbox.value; const recordToUpdate = allDnsRecords.find(rec => rec.id === recordId); if (recordToUpdate) { promises.push(fetch('http://localhost:3000/api/update-record', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ zoneId: recordToUpdate.zone_id, token: currentToken, recordId: recordToUpdate.id, type: recordToUpdate.type, name: recordToUpdate.name, content: newContent }) }).then(response => response.json())); } } try { const results = await Promise.all(promises); const successfulUpdates = results.filter(r => r.success).length; const failedUpdates = results.length - successfulUpdates; alert(`Bulk update complete.\nSuccessful: ${successfulUpdates}\nFailed: ${failedUpdates}`); loadRecordsForSelectedDomains(); } catch(error) { console.error("Bulk update failed:", error); alert("A major error occurred during the bulk update."); } }
+</script>
+
+</body>
+</html>
