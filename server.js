@@ -6,6 +6,7 @@ const fetch = require('node-fetch');
 const cors = require('cors');
 
 const app = express();
+// Use a router for better organization
 const router = express.Router();
 
 app.use(cors());
