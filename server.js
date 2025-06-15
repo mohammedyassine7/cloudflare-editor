@@ -14,7 +14,8 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 // خدمة الملفات الثابتة من مجلد 'public'
-app.use(express.static(path.join(__dirname, '..', 'public')));
+// *** تم تصحيح المسار ليعمل على Vercel ***
+app.use(express.static(path.join(process.cwd(), 'public')));
 
 // الرابط الأساسي لواجهة برمجة تطبيقات كلاودفلير
 const CLOUDFLARE_API_BASE_URL = 'https://api.cloudflare.com/client/v4';
@@ -83,8 +84,8 @@ app.delete('/api/delete-record', async (req, res) => {
 // نقطة النهاية لخدمة الواجهة الأمامية
 // هذا يضمن أن أي رابط يدخله المستخدم، يتم توجيهه إلى صفحة index.html
 app.get('*', (req, res) => {
-  // المسار الآن مصحح ليعمل بشكل صحيح في بيئة Vercel
-  res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
+  // *** تم تصحيح المسار ليعمل بشكل صحيح في بيئة Vercel ***
+  res.sendFile(path.join(process.cwd(), 'public', 'index.html'));
 });
 
 
