@@ -1,35 +1,25 @@
 // server.js
-// هذا هو الخادم الخلفي (Backend) الذي سيعمل كوسيط آمن
-// بين واجهتك الأمامية (HTML) وواجهة برمجة تطبيقات كلاودفلير (Cloudflare API)
-// *** نسخة معدلة للنشر على الإنترنت ***
+// *** النسخة النهائية المتوافقة مع Vercel ***
 
-// 1. استيراد المكتبات الضرورية
-const express = require('express');        // إطار عمل لتسهيل بناء الخادم
-const fetch = require('node-fetch');       // مكتبة لإجراء طلبات HTTP (مثل fetch في المتصفح)
-const cors = require('cors');              // مكتبة للسماح للواجهة الأمامية بالتواصل مع هذا الخادم
-const path = require('path');              // مكتبة للتعامل مع مسارات الملفات (جديد)
+// 1. استيراد المكتبات
+const express = require('express');
+const fetch = require('node-fetch');
+const cors = require('cors');
+const path = require('path');
 
 // 2. إعداد تطبيق Express
 const app = express();
-const port = process.env.PORT || 3000; // المنفذ الذي سيستمع إليه الخادم. مهم لمنصات الاستضافة
 
 // 3. تفعيل الإضافات (Middleware)
 app.use(cors());
 app.use(express.json());
-
-// *** جديد: خدمة الملفات الثابتة (الواجهة الأمامية) ***
-// هذا السطر يخبر الخادم أن أي ملف مطلوب (مثل index.html, css, js)
-// يجب البحث عنه داخل مجلد اسمه 'public'
-app.use(express.static(path.join(__dirname, 'public')));
-
+// خدمة الملفات الثابتة من مجلد 'public'
+app.use(express.static(path.join(__dirname, '..', 'public')));
 
 // الرابط الأساسي لواجهة برمجة تطبيقات كلاودفلير
 const CLOUDFLARE_API_BASE_URL = 'https://api.cloudflare.com/client/v4';
 
-/**
- * دالة مساعدة لإنشاء طلبات Fetch إلى كلاودفلير
- * (هذه الدالة تبقى كما هي)
- */
+// دالة مساعدة لإجراء الطلبات إلى كلاودفلير
 async function cloudflareRequest(endpoint, token, method, body = null) {
     const headers = {
         'Authorization': `Bearer ${token}`,
@@ -48,10 +38,9 @@ async function cloudflareRequest(endpoint, token, method, body = null) {
     }
 }
 
-
 // --- 4. تعريف نقاط النهاية (API Endpoints) ---
-// (هذه المسارات تبقى كما هي)
 
+// نقطة النهاية لجلب كل النطاقات (Zones)
 app.post('/api/all-zones', async (req, res) => {
     const { token } = req.body;
     if (!token) {
@@ -61,12 +50,14 @@ app.post('/api/all-zones', async (req, res) => {
     res.json(data);
 });
 
+// نقطة النهاية لجلب سجلات DNS
 app.post('/api/dns-records', async (req, res) => {
     const { token, zoneId } = req.body;
     const data = await cloudflareRequest(`/zones/${zoneId}/dns_records`, token, 'GET');
     res.json(data);
 });
 
+// نقطة النهاية لإضافة سجل DNS
 app.post('/api/add-record', async (req, res) => {
     const { token, zoneId, type, name, content } = req.body;
     const body = { type, name, content, ttl: 1, proxied: false };
@@ -74,6 +65,7 @@ app.post('/api/add-record', async (req, res) => {
     res.json(data);
 });
 
+// نقطة النهاية لتحديث سجل DNS
 app.put('/api/update-record', async (req, res) => {
     const { token, zoneId, recordId, type, name, content } = req.body;
     const body = { type, name, content, ttl: 1 };
@@ -81,21 +73,22 @@ app.put('/api/update-record', async (req, res) => {
     res.json(data);
 });
 
+// نقطة النهاية لحذف سجل DNS
 app.delete('/api/delete-record', async (req, res) => {
     const { token, zoneId, recordId } = req.body;
     const data = await cloudflareRequest(`/zones/${zoneId}/dns_records/${recordId}`, token, 'DELETE');
     res.json(data);
 });
 
-// *** جديد: معالجة كل الطلبات الأخرى ***
-// هذا السطر يضمن أن أي رابط يدخله المستخدم، يتم توجيهه إلى صفحة index.html
-// وهذا مهم للتطبيقات التي تستخدم التوجيه من جانب العميل (Client-side routing)
+// نقطة النهاية لخدمة الواجهة الأمامية
+// هذا يضمن أن أي رابط يدخله المستخدم، يتم توجيهه إلى صفحة index.html
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  // المسار الآن مصحح ليعمل بشكل صحيح في بيئة Vercel
+  res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
 });
 
 
-// 5. تشغيل الخادم
-app.listen(port, () => {
-    console.log(`✅ Server is running on port ${port}`);
-});
+// 5. تصدير التطبيق
+// هذا هو التغيير الأهم. بدل app.listen، نقوم بتصدير التطبيق
+// لكي تتمكن Vercel من التعامل معه كدالة serverless.
+module.exports = app;
