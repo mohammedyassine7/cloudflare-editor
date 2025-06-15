@@ -6,7 +6,6 @@ const fetch = require('node-fetch');
 const cors = require('cors');
 
 const app = express();
-// Use a router for better organization
 const router = express.Router();
 
 app.use(cors());
@@ -26,6 +25,7 @@ async function cloudflareRequest(endpoint, token, method, body = null) {
     }
     try {
         const response = await fetch(`${CLOUDFLARE_API_BASE_URL}${endpoint}`, options);
+        // Always return the response, even if it's an error, to let the frontend handle it
         return await response.json();
     } catch (error) {
         console.error('Cloudflare API request error:', error);
@@ -34,6 +34,7 @@ async function cloudflareRequest(endpoint, token, method, body = null) {
 }
 
 // --- API Routes ---
+// Note: The paths are now relative to '/api' (e.g., '/all-zones')
 router.post('/all-zones', async (req, res) => {
     const { token } = req.body;
     if (!token) return res.status(400).json({ success: false, errors: [{ message: 'API Token is required.' }] });
@@ -68,8 +69,7 @@ router.delete('/delete-record', async (req, res) => {
 });
 
 // Use the router for all routes starting with /api
-// The frontend will call endpoints like /api/all-zones
 app.use('/api/', router);
 
-// Export the app for Vercel to use
+// Export the app for Vercel to use as a serverless function
 module.exports = app;
